@@ -126,14 +126,21 @@ static void verifyAllowedClassesByPropertyKey(Class modelClass) {
 	NSParameterAssert(key != nil);
 	NSParameterAssert(coder != nil);
 
-	SEL selector = MTLSelectorWithCapitalizedKeyPattern("decode", key, "WithCoder:modelVersion:");
-	if ([self respondsToSelector:selector]) {
-		IMP imp = [self methodForSelector:selector];
-		id (*function)(id, SEL, NSCoder *, NSUInteger) = (__typeof__(function))imp;
-		id result = function(self, selector, coder, modelVersion);
-		
-		return result;
-	}
+	// BEGIN ORM-PERF-1
+	// Commented out by mkirk as part of ORM perf optimizations.
+	// The `MTLSelectorWithCapitalizedKeyPattern` can be quite expensive in aggregate
+	// and we're not using the reflective features that require it.
+	// If we later want to use this feature, we'll need to carefully evaluate the perf
+	// implications on large migrations.
+	//    SEL selector = MTLSelectorWithCapitalizedKeyPattern("decode", key, "WithCoder:modelVersion:");
+	//    if ([self respondsToSelector:selector]) {
+	//        IMP imp = [self methodForSelector:selector];
+	//        id (*function)(id, SEL, NSCoder *, NSUInteger) = (__typeof__(function))imp;
+	//        id result = function(self, selector, coder, modelVersion);
+	//
+	//        return result;
+	//    }
+	// END ORM-PERF-1
 
 	@try {
 		if (coderRequiresSecureCoding(coder)) {

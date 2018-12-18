@@ -250,32 +250,40 @@ static BOOL MTLValidateAndSetValue(id obj, NSString *key, id value, BOOL forceUp
 
 #pragma mark Merging
 
-- (void)mergeValueForKey:(NSString *)key fromModel:(NSObject<MTLModel> *)model {
-	NSParameterAssert(key != nil);
-
-	SEL selector = MTLSelectorWithCapitalizedKeyPattern("merge", key, "FromModel:");
-	if (![self respondsToSelector:selector]) {
-		if (model != nil) {
-			[self setValue:[model valueForKey:key] forKey:key];
-		}
-
-		return;
-	}
-
-	IMP imp = [self methodForSelector:selector];
-	void (*function)(id, SEL, id<MTLModel>) = (__typeof__(function))imp;
-	function(self, selector, model);
-}
-
-- (void)mergeValuesForKeysFromModel:(id<MTLModel>)model {
-	NSSet *propertyKeys = model.class.propertyKeys;
-
-	for (NSString *key in self.class.propertyKeys) {
-		if (![propertyKeys containsObject:key]) continue;
-
-		[self mergeValueForKey:key fromModel:model];
-	}
-}
+// BEGIN ORM-PERF-1
+// Commented out by mkirk as part of ORM perf optimizations.
+// The `MTLSelectorWithCapitalizedKeyPattern` can be quite expensive in aggregate
+// and we're not using the reflective features that require it.
+// If we later want to use this feature, we'll need to carefully evaluate the perf
+// implications on large migrations.
+//
+//- (void)mergeValueForKey:(NSString *)key fromModel:(NSObject<MTLModel> *)model {
+//    NSParameterAssert(key != nil);
+//
+////    SEL selector = MTLSelectorWithCapitalizedKeyPattern("merge", key, "FromModel:");
+////    if (![self respondsToSelector:selector]) {
+////        if (model != nil) {
+////            [self setValue:[model valueForKey:key] forKey:key];
+////        }
+////
+////        return;
+////    }
+//
+//    IMP imp = [self methodForSelector:selector];
+//    void (*function)(id, SEL, id<MTLModel>) = (__typeof__(function))imp;
+//    function(self, selector, model);
+//}
+//
+//- (void)mergeValuesForKeysFromModel:(id<MTLModel>)model {
+//    NSSet *propertyKeys = model.class.propertyKeys;
+//
+//    for (NSString *key in self.class.propertyKeys) {
+//        if (![propertyKeys containsObject:key]) continue;
+//
+//        [self mergeValueForKey:key fromModel:model];
+//    }
+//}
+// END ORM-PERF-1
 
 #pragma mark Validation
 
