@@ -17,6 +17,15 @@ static NSString * const MTLModelVersionKey = @"MTLModelVersion";
 // Used to cache the reflection performed in +allowedSecureCodingClassesByPropertyKey.
 static void *MTLModelCachedAllowedClassesKey = &MTLModelCachedAllowedClassesKey;
 
+// BEGIN ORM-PERF-3
+// Added by mkirk as part of ORM perf optimizations.
+//
+// +encodingBehaviorsByPropertyKey is somewhat expensive, so we follow existing library patterns
+// to cache the computed reflection on the class via an associated object
+// Used to cache the reflection performed in +encodingBehaviorsByPropertyKey.
+static void *MTLModelCachedEncodingBehaviorsByPropertyKeyKey = &MTLModelCachedEncodingBehaviorsByPropertyKeyKey;
+// END ORM-PERF-3
+
 // Returns whether the given NSCoder requires secure coding.
 static BOOL coderRequiresSecureCoding(NSCoder *coder) {
 	SEL requiresSecureCodingSelector = @selector(requiresSecureCoding);
@@ -63,6 +72,15 @@ static void verifyAllowedClassesByPropertyKey(Class modelClass) {
 #pragma mark Encoding Behaviors
 
 + (NSDictionary *)encodingBehaviorsByPropertyKey {
+	// BEGIN ORM-PERF-3
+	// Added by mkirk as part of ORM perf optimizations.
+	//
+	// +encodingBehaviorsByPropertyKey is somewhat expensive, so we follow existing library patterns
+	// to cache the computed reflection on the class via an associated object
+	NSDictionary *cachedBehaviors = objc_getAssociatedObject(self, MTLModelCachedEncodingBehaviorsByPropertyKeyKey);
+	if (cachedBehaviors != nil) return cachedBehaviors;
+	// END ORM-PERF-3
+
 	NSSet *propertyKeys = self.propertyKeys;
 	NSMutableDictionary *behaviors = [[NSMutableDictionary alloc] initWithCapacity:propertyKeys.count];
 
@@ -78,6 +96,14 @@ static void verifyAllowedClassesByPropertyKey(Class modelClass) {
 		MTLModelEncodingBehavior behavior = (attributes->weak ? MTLModelEncodingBehaviorConditional : MTLModelEncodingBehaviorUnconditional);
 		behaviors[key] = @(behavior);
 	}
+
+	// BEGIN ORM-PERF-3
+	// Added by mkirk as part of ORM perf optimizations.
+	//
+	// +encodingBehaviorsByPropertyKey is somewhat expensive, so we follow existing library patterns
+	// to cache the computed reflection on the class via an associated object
+	objc_setAssociatedObject(self, MTLModelCachedEncodingBehaviorsByPropertyKeyKey, behaviors, OBJC_ASSOCIATION_COPY);
+	// END ORM-PERF-3
 
 	return behaviors;
 }
