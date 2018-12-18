@@ -175,19 +175,29 @@ typedef enum : NSUInteger {
 
 @end
 
-/// Implements validation logic for MTLModel.
-@interface MTLModel (Validation)
-
-/// Validates the model.
-///
-/// The default implementation simply invokes -validateValue:forKey:error: with
-/// all +propertyKeys and their current value. If -validateValue:forKey:error:
-/// returns a new value, the property is set to that new value.
-///
-/// error - If not NULL, this may be set to any error that occurs during
-///         validation
-///
-/// Returns YES if the model is valid, or NO if the validation failed.
-- (BOOL)validate:(NSError **)error;
-
-@end
+// BEGIN ORM-PERF-2
+// Commented out by mkirk as part of ORM perf optimizations.
+//
+// The validation NSCoding validation reflection used by Mantle is expensive, and
+// we've never used it.
+// If we later want to use this feature, we'll need to carefully evaluate the perf
+// implications on large migrations.
+//
+///// Implements validation logic for MTLModel.
+//@interface MTLModel (Validation)
+//
+///// Validates the model.
+/////
+///// The default implementation simply invokes -validateValue:forKey:error: with
+///// all +propertyKeys and their current value. If -validateValue:forKey:error:
+///// returns a new value, the property is set to that new value.
+/////
+///// error - If not NULL, this may be set to any error that occurs during
+/////         validation
+/////
+///// Returns YES if the model is valid, or NO if the validation failed.
+//- (BOOL)validate:(NSError **)error;
+//
+//@end
+//
+// END ORM-PERF-2
