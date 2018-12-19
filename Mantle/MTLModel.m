@@ -24,6 +24,16 @@ static void *MTLModelCachedTransitoryPropertyKeysKey = &MTLModelCachedTransitory
 // property keys.
 static void *MTLModelCachedPermanentPropertyKeysKey = &MTLModelCachedPermanentPropertyKeysKey;
 
+// BEGIN ORM-PERF-4
+// Added by mkirk as part of ORM perf optimizations.
+//
+// +dictionaryValueKeys is somewhat expensive, so we follow existing library patterns
+// to cache the computed reflection on the class via an associated object
+//
+// Used to cache the reflection performed in +dictionaryValueKeys
+static void *MTLModelCachedDictionaryValueKeysKey = &MTLModelCachedDictionaryValueKeysKey;
+// END ORM-PERF-4
+
 // BEGIN ORM-PERF-2
 // Commented out by mkirk as part of ORM perf optimizations.
 //
@@ -233,11 +243,28 @@ static void *MTLModelCachedPermanentPropertyKeysKey = &MTLModelCachedPermanentPr
 	return permanentPropertyKeys;
 }
 
-- (NSDictionary *)dictionaryValue {
-	NSSet *keys = [self.class.transitoryPropertyKeys setByAddingObjectsFromSet:self.class.permanentPropertyKeys];
-
-	return [self dictionaryWithValuesForKeys:keys.allObjects];
+// BEGIN ORM-PERF-4
+// Added by mkirk as part of ORM perf optimizations.
+//
+// +dictionaryValueKeys is somewhat expensive, so we follow existing library patterns
+// to cache the computed reflection on the class via an associated object
+//
+// Used to cache the reflection performed in +dictionaryValueKeys
++ (NSArray<NSString *> *)dictionaryValueKeys {
+	NSArray<NSString *> *dictionaryValueKeys = objc_getAssociatedObject(self, MTLModelCachedDictionaryValueKeysKey);
+	if (!dictionaryValueKeys) {
+		NSSet *keys = [self.class.transitoryPropertyKeys setByAddingObjectsFromSet:self.permanentPropertyKeys];
+		dictionaryValueKeys = keys.allObjects;
+		objc_setAssociatedObject(self, MTLModelCachedDictionaryValueKeysKey, dictionaryValueKeys, OBJC_ASSOCIATION_COPY);
+	}
+	return dictionaryValueKeys;
 }
+
+- (NSDictionary *)dictionaryValue {
+	NSArray<NSString *> *keys = self.class.dictionaryValueKeys;
+	return [self dictionaryWithValuesForKeys:keys];
+}
+// END ORM-PERF-4
 
 + (MTLPropertyStorage)storageBehaviorForPropertyWithKey:(NSString *)propertyKey {
 	objc_property_t property = class_getProperty(self.class, propertyKey.UTF8String);
