@@ -97,7 +97,7 @@ typedef enum : NSUInteger {
 ///         validation
 ///
 /// Returns YES if the model is valid, or NO if the validation failed.
-- (BOOL)validate:(NSError **)error;
+//- (BOOL)validate:(NSError **)error;
 
 @end
 
