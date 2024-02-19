@@ -180,11 +180,12 @@ NSString * const MTLBooleanValueTransformerName = @"MTLBooleanValueTransformerNa
 		NSMutableArray *transformedValues = [NSMutableArray arrayWithCapacity:values.count];
 		NSInteger index = -1;
 		for (id value in values) {
-			index++;
-			if (value == NSNull.null) {
-				[transformedValues addObject:NSNull.null];
+			
+			if (value == NSNull.null) { // Shouldn't have NSNull in our container model
 				continue;
 			}
+			
+			index++;
 			
 			id transformedValue = nil;
 			if ([transformer conformsToProtocol:@protocol(MTLTransformerErrorHandling)]) {
@@ -195,7 +196,7 @@ NSString * const MTLBooleanValueTransformerName = @"MTLBooleanValueTransformerNa
 					if (error != NULL) {
 						NSDictionary *userInfo = @{
 							NSLocalizedDescriptionKey: NSLocalizedString(@"Could not transform array", @""),
-							NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:NSLocalizedString(@"Could not transform value at index %d", @""), index],
+							NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:NSLocalizedString(@"Could not transform value at index %ld", @""), (long)index],
 							NSUnderlyingErrorKey: underlyingError,
 							MTLTransformerErrorHandlingInputValueErrorKey: values
 						};
@@ -238,12 +239,12 @@ NSString * const MTLBooleanValueTransformerName = @"MTLBooleanValueTransformerNa
 			NSMutableArray *transformedValues = [NSMutableArray arrayWithCapacity:values.count];
 			NSInteger index = -1;
 			for (id value in values) {
-				index++;
-				if (value == NSNull.null) {
-					[transformedValues addObject:NSNull.null];
 
+				if (value == NSNull.null) { // Shouldn't have NSNull in our container model
 					continue;
 				}
+				
+				index++;
 				
 				id transformedValue = nil;
 				if ([transformer respondsToSelector:@selector(reverseTransformedValue:success:error:)]) {
@@ -254,7 +255,7 @@ NSString * const MTLBooleanValueTransformerName = @"MTLBooleanValueTransformerNa
 						if (error != NULL) {
 							NSDictionary *userInfo = @{
 								NSLocalizedDescriptionKey: NSLocalizedString(@"Could not transform array", @""),
-								NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:NSLocalizedString(@"Could not transform value at index %d", @""), index],
+								NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:NSLocalizedString(@"Could not transform value at index %ld", @""), (long)index],
 								NSUnderlyingErrorKey: underlyingError,
 								MTLTransformerErrorHandlingInputValueErrorKey: values
 							};

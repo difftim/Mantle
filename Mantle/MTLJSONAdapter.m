@@ -570,8 +570,7 @@ NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapterThrownE
 			
 			NSMutableArray *models = [NSMutableArray arrayWithCapacity:dictionaries.count];
 			for (id JSONDictionary in dictionaries) {
-				if (JSONDictionary == NSNull.null) {
-					[models addObject:NSNull.null];
+				if (JSONDictionary == NSNull.null) { // Shouldn't have NSNull in our container model
 					continue;
 				}
 				
@@ -619,8 +618,7 @@ NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapterThrownE
 			
 			NSMutableArray *dictionaries = [NSMutableArray arrayWithCapacity:models.count];
 			for (id model in models) {
-				if (model == NSNull.null) {
-					[dictionaries addObject:NSNull.null];
+				if (model == NSNull.null) { // Shouldn't have NSNull in our container model
 					continue;
 				}
 				
